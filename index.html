@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APL - Клеточное Питание | Галина Орлова</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        #hero-bubbles-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 1;
+            pointer-events: none;
+            display: block;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><radialGradient id="g" cx="50%" cy="50%" r="50%"><stop offset="0%" style="stop-color:rgba(255,255,255,0.1);stop-opacity:1" /><stop offset="100%" style="stop-color:rgba(255,255,255,0);stop-opacity:0" /></radialGradient></defs><circle cx="20" cy="20" r="3" fill="url(%23g)"><animate attributeName="r" values="3;8;3" dur="4s" repeatCount="indefinite"/></circle><circle cx="80" cy="30" r="4" fill="url(%23g)"><animate attributeName="r" values="4;9;4" dur="5s" repeatCount="indefinite"/></circle><circle cx="40" cy="70" r="2" fill="url(%23g)"><animate attributeName="r" values="2;7;2" dur="3s" repeatCount="indefinite"/></circle></svg>') center/cover;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .hero-content {
+            color: white;
+            text-align: center;
+            z-index: 2;
+            position: relative;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #fff, #f0f8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero h2 {
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.9; }
+            50% { opacity: 1; }
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 20px 40px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s ease;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4); }
+            to { box-shadow: 0 15px 40px rgba(255, 107, 107, 0.6); }
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(255, 107, 107, 0.6);
+        }
+
+        /* Problem Section */
+        .problem {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .problem::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M0,50 Q25,25 50,50 T100,50 L100,100 L0,100 Z" fill="rgba(255,255,255,0.05)"/></svg>') center/cover;
+        }
+
+        .section-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .problem h2 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: #e74c3c;
+        }
+
+        .problem-text {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .highlight {
+            color: #f39c12;
+            font-weight: bold;
+        }
+
+        /* Solution Section */
+        .solution {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .solution::before {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+            top: 20%;
+            right: 10%;
+            animation: floating 6s ease-in-out infinite;
+        }
+
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .solution h2 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .benefit-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .benefit-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        /* Testimonial Section */
+        .testimonial {
+            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+            color: white;
+            padding: 100px 0;
+        }
+
+        .testimonial-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+
+        .testimonial-photo {
+            flex-shrink: 0;
+            width: 500px;
+        }
+
+        .apl-photo {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+            border: 4px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .apl-photo:hover {
+            transform: scale(1.05);
+            box-shadow: 0 16px 50px rgba(0,0,0,0.4);
+        }
+
+        .testimonial-text-content {
+            flex: 1;
+            text-align: left;
+            position: relative;
+        }
+
+        .testimonial-text {
+            font-size: 1.5rem;
+            font-style: italic;
+            margin-bottom: 2rem;
+            line-height: 1.8;
+        }
+
+        .testimonial-author {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ffeaa7;
+        }
+
+        /* Benefits Section */
+        .benefits {
+            background: linear-gradient(135deg, #00b894, #00a085);
+            color: white;
+            padding: 100px 0;
+        }
+
+        .benefits h2 {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .benefits-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .benefit-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .benefit-item:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .benefit-item h3 {
+            color: #ffeaa7;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Business Opportunity */
+        .business {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+        }
+
+        .business h2 {
+            font-size: 3rem;
+            margin-bottom: 2rem;
+        }
+
+        .business-text {
+            font-size: 1.3rem;
+            max-width: 900px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        /* Final CTA */
+        .final-cta {
+            background: linear-gradient(135deg, #2d3436, #636e72);
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .final-cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.1)"><animate attributeName="r" values="2;20;2" dur="3s" repeatCount="indefinite"/></circle></svg>') center/cover;
+        }
+
+        .contact-info {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 3rem;
+            margin: 2rem auto;
+            max-width: 600px;
+            border: 2px solid #f39c12;
+        }
+
+        .phone-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #f39c12;
+            margin: 1rem 0;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .phone-number:hover {
+            transform: scale(1.1);
+            color: #ffeaa7;
+        }
+
+        .urgency {
+            background: #e74c3c;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            margin: 2rem 0;
+            font-weight: bold;
+            animation: urgencyPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes urgencyPulse {
+            0%, 100% { background: #e74c3c; }
+            50% { background: #c0392b; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .hero h2 { font-size: 1.5rem; }
+            .section h2 { font-size: 2rem; }
+            .benefits-grid { grid-template-columns: 1fr; }
+            .benefits-list { grid-template-columns: 1fr; }
+        }
+
+        /* Scroll animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .hero-photo {
+            width: 260px;
+            height: 260px;
+            object-fit: cover;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25), 0 1.5px 8px rgba(255,255,255,0.15) inset;
+            border: 6px solid #fff;
+            margin-bottom: 1.2rem;
+            margin-top: 1.2rem;
+            background: #fff;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            transition: transform 0.4s cubic-bezier(.4,2,.6,1);
+        }
+        .hero-photo:hover {
+            transform: scale(1.05) rotate(-2deg);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.35);
+        }
+        .hero-photo-caption {
+            color: #fff;
+            font-size: 1.4rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 1.2rem;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.18);
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero">
+        <canvas id="hero-bubbles-canvas"></canvas>
+        <div class="container">
+            <div class="hero-content">
+                <img src="orlova.jpg" alt="Галина Орлова" class="hero-photo">
+                <div class="hero-photo-caption">Галина Орлова</div>
+                <h1>Хватит кормить аптеки!</h1>
+                <h2>Проснись полным сил и здоровья – без таблеток и побочных эффектов!</h2>
+                <p style="font-size: 1.3rem; margin-bottom: 2rem; opacity: 0.9;">Открой для себя Клеточное Питание APL – твой природный ключ к энергии, молодости и свободе!</p>
+                <a href="#contact" class="cta-button">🔥 Получить консультацию СЕЙЧАС!</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem">
+        <div class="container">
+            <div class="section-content fade-in">
+                <h2>Знакомо ли тебе это?</h2>
+                <div class="problem-text">
+                    <p>Просыпаешься <span class="highlight">разбитым</span>, хотя только что встал. Энергии едва хватает до обеда, а к вечеру – <span class="highlight">полный ноль</span>. Постоянная простуда, апатия, вечные очереди в поликлиниках и горы таблеток, которые одно лечат, а другое… <span class="highlight">калечат</span>.</p>
+                    <br>
+                    <p style="font-size: 1.5rem; color: #f39c12; font-weight: bold;">Хочешь вырваться из этого замкнутого круга? Хочешь, наконец, почувствовать настоящую, бьющую ключом ЖИЗНЬ?</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="solution">
+        <div class="container">
+            <div class="section-content fade-in">
+                <h2>СТОП! Есть другой путь.</h2>
+                <p style="text-align: center; font-size: 1.3rem; margin-bottom: 2rem;">Я, <strong>Галина Орлова</strong>, сетевой предприниматель APL, уже 5 лет не знаю, что такое упадок сил и бесконечные болезни.</p>
+                <p style="text-align: center; font-size: 1.5rem; color: #ffeaa7; font-weight: bold;">Мой секрет? Клеточное Питание APL.</p>
+                
+                <div class="benefits-grid">
+                    <div class="benefit-card">
+                        <span class="benefit-icon">🎯</span>
+                        <h3>Действуют на причину</h3>
+                        <p>Питают твои клетки всем необходимым</p>
+                    </div>
+                    <div class="benefit-card">
+                        <span class="benefit-icon">🌿</span>
+                        <h3>Безопасны и удобны</h3>
+                        <p>Никакой химии, никаких сложных схем приема</p>
+                    </div>
+                    <div class="benefit-card">
+                        <span class="benefit-icon">⚡</span>
+                        <h3>Работают сразу</h3>
+                        <p>Результат чувствуешь быстро – прилив сил, ясность ума</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonial Section -->
+    <section class="testimonial">
+        <div class="container">
+            <div class="testimonial-content fade-in">
+                <div class="testimonial-photo">
+                    <img src="apl.jpg" alt="APL Продукты" class="apl-photo">
+                </div>
+                <div class="testimonial-text-content">
+                    <p class="testimonial-text">– Когда я открыла для себя APL, это был переворот. Моя усталость ушла, появилась энергия, которой хватает на всё! И знаешь, что самое удивительное? Биологический возраст на приборах показывает, что я моложе паспортного на целых 10 лет!</p>
+                    <p class="testimonial-author">– Галина Орлова, Твой проводник в мир здоровья и энергии</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits">
+        <div class="container">
+            <div class="section-content fade-in">
+                <h2>Представь, как изменится ТВОЯ жизнь:</h2>
+                <div class="benefits-list">
+                    <div class="benefit-item">
+                        <h3>⚡ Энергия</h3>
+                        <p>Просыпаешься отдохнувшим, весь день – в движении, вечером – хватает сил на семью и хобби!</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h3>💪 Здоровье</h3>
+                        <p>Крепкий иммунитет, отличное самочувствие, забытые болячки. Скажи "нет" сезонным простудам!</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h3>✨ Молодость</h3>
+                        <p>Сияющая кожа, блестящие волосы, легкость в движениях. Твое тело работает как у молодого!</p>
+                    </div>
+                    <div class="benefit-item">
+                        <h3>🕊️ Свобода</h3>
+                        <p>Больше времени и сил на то, что любишь: путешествия, активный отдых, саморазвитие!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Business Opportunity -->
+    <section class="business">
+        <div class="container">
+            <div class="section-content fade-in">
+                <h2>А что, если это может стать источником дохода?</h2>
+                <div class="business-text">
+                    <p><strong>Попробуй APL – полюби результат – поделись с близкими – начни зарабатывать!</strong></p>
+                    <br>
+                    <p>Это не просто продукт – это твой билет в новую жизнь. Получай здоровье и энергию для себя, помогай обрести их родным и друзьям – и открывай для себя мир финансовой свободы!</p>
+                    <br>
+                    <p style="color: #ffeaa7; font-weight: bold; font-size: 1.4rem;">Путешествуй, воплощай мечты, живи полной жизнью – и получай за это вознаграждение!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta" id="contact">
+        <div class="container">
+            <div class="section-content fade-in">
+                <h2>Твой первый шаг к энергии и свободе – ПРЯМО СЕЙЧАС!</h2>
+                
+                <div class="urgency">
+                    🔥 ДЕЙСТВУЙ СЕЙЧАС! Количество мест в команде ограничено! 🔥
+                </div>
+
+                <div class="contact-info">
+                    <h3 style="margin-bottom: 1rem; color: #ffeaa7;">Галина Орлова</h3>
+                    <p style="margin-bottom: 1rem;">✅ Узнай, какие продукты APL подходят именно тебе</p>
+                    <p style="margin-bottom: 1rem;">✅ Получи личную консультацию</p>
+                    <p style="margin-bottom: 2rem;">✅ Узнай, как начать зарабатывать</p>
+                    
+                    <a href="tel:89139586418" class="phone-number">📱 8-913-958-6418</a>
+                    <br>
+                    <a href="https://wa.me/79139586418" class="cta-button" style="margin-top: 1rem;">💬 Написать в WhatsApp</a>
+                </div>
+
+                <p style="font-size: 1.2rem; margin-top: 2rem; color: #f39c12;"><strong>P.S.</strong> Не жди "понедельника" – твоя новая жизнь начинается сегодня!</p>
+                <p style="font-size: 1.1rem; margin-top: 1rem; color: #ffeaa7;"><strong>P.P.S.</strong> Всего один звонок отделяет тебя от ответов, энергии и новых возможностей. <strong>ДЕЙСТВУЙ!</strong></p>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Phone number click tracking
+        document.querySelector('a[href^="tel:"]').addEventListener('click', function() {
+            console.log('Phone number clicked');
+        });
+
+        // WhatsApp click tracking
+        document.querySelector('a[href^="https://wa.me/"]').addEventListener('click', function() {
+            console.log('WhatsApp clicked');
+        });
+
+        // --- Анимированные шарики с физикой отталкивания ---
+        (function() {
+            const canvas = document.getElementById('hero-bubbles-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let dpr = window.devicePixelRatio || 1;
+            let width = 0, height = 0;
+            function resize() {
+                const hero = document.querySelector('.hero');
+                width = hero.offsetWidth;
+                height = hero.offsetHeight;
+                canvas.width = width * dpr;
+                canvas.height = height * dpr;
+                canvas.style.width = width + 'px';
+                canvas.style.height = height + 'px';
+                ctx.setTransform(1,0,0,1,0,0);
+                ctx.scale(dpr, dpr);
+            }
+            window.addEventListener('resize', resize);
+            setTimeout(resize, 100); // для корректного старта
+
+            // Параметры шариков
+            const BUBBLE_COUNT = 8;
+            const MIN_RADIUS = 32, MAX_RADIUS = 70;
+            const bubbles = [];
+            for (let i = 0; i < BUBBLE_COUNT; i++) {
+                const r = Math.random() * (MAX_RADIUS - MIN_RADIUS) + MIN_RADIUS;
+                bubbles.push({
+                    x: Math.random() * 0.8 * width + 0.1 * width,
+                    y: Math.random() * 0.8 * height + 0.1 * height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    r,
+                    color: 'rgba(255,255,255,' + (0.10 + Math.random() * 0.18).toFixed(2) + ')',
+                });
+            }
+
+            function update() {
+                for (let i = 0; i < bubbles.length; i++) {
+                    let b = bubbles[i];
+                    b.x += b.vx;
+                    b.y += b.vy;
+                    // Стенки
+                    if (b.x - b.r < 0) { b.x = b.r; b.vx *= -1; }
+                    if (b.x + b.r > width) { b.x = width - b.r; b.vx *= -1; }
+                    if (b.y - b.r < 0) { b.y = b.r; b.vy *= -1; }
+                    if (b.y + b.r > height) { b.y = height - b.r; b.vy *= -1; }
+                    // Отталкивание
+                    for (let j = i+1; j < bubbles.length; j++) {
+                        let b2 = bubbles[j];
+                        let dx = b2.x - b.x, dy = b2.y - b.y;
+                        let dist = Math.sqrt(dx*dx + dy*dy);
+                        let minDist = b.r + b2.r - 8; // чуть-чуть пересекаются для мягкости
+                        if (dist < minDist && dist > 0) {
+                            // Сила отталкивания
+                            let force = (minDist - dist) * 0.015;
+                            let fx = force * dx / dist;
+                            let fy = force * dy / dist;
+                            b.vx -= fx; b.vy -= fy;
+                            b2.vx += fx; b2.vy += fy;
+                        }
+                    }
+                    // Немного затухания скорости для плавности
+                    b.vx *= 0.995;
+                    b.vy *= 0.995;
+                }
+            }
+            function draw() {
+                ctx.clearRect(0,0,width,height);
+                for (let b of bubbles) {
+                    let grad = ctx.createRadialGradient(b.x, b.y, b.r*0.2, b.x, b.y, b.r);
+                    grad.addColorStop(0, 'rgba(255,255,255,0.22)');
+                    grad.addColorStop(1, b.color);
+                    ctx.beginPath();
+                    ctx.arc(b.x, b.y, b.r, 0, 2*Math.PI);
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                }
+            }
+            function loop() {
+                update();
+                draw();
+                requestAnimationFrame(loop);
+            }
+            setTimeout(loop, 200);
+        })();
+    </script>
+</body>
+</html>
